@@ -10,9 +10,8 @@ db = SQLAlchemy(app)    #后写
 
 @app.route('/')
 def index():
-    user = User.query.first()
     movies = Movie.query.all()
-    return render_template('index.html',user=user,movies=movies)
+    return render_template('index.html',movies=movies)
 
 @app.route('/home/<name>')
 def user_page(name):
@@ -20,11 +19,15 @@ def user_page(name):
 
 @app.route('/test')
 def test_url_for():
-    print(url_for('hello'))
+    print(url_for('index'))
     print(url_for('user_page',name='sunergao'))
     print(url_for('test_url_for'))
     print(url_for('test_url_for',num=2))
     return 'test_page'
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 # name = 'sunergao'
 # movies = [
@@ -42,6 +45,11 @@ class Movie(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     title = db.Column(db.String(60))
     year = db.Column(db.String(4))
+
+@app.context_processor
+def inject_user():
+    user = User.query.first()
+    return dict(user=user)
 
 @app.cli.command()
 @click.option('--drop',is_flag=True,help='Create after drop.')
